@@ -20,12 +20,12 @@ fun NavGraph() {
         navController = navController,
         startDestination = "home"
     ) {
-        composable("home") { HomeScreen() }
+        composable("home") { HomeScreen(navController) }
         composable("profile") { ProfileScreen() }
-        composable("active_workout") { ActiveWorkoutScreen() }
+        composable("active_workout") { ActiveWorkoutScreen(navController) }
         composable("exercise_browser") { ExerciseBrowserScreen() }
         composable("workout_detail") { WorkoutDetailsScreen() }
-        composable("login") { LoginScreen() }
-        composable("register") { RegisterScreen() }
+        composable("login") { LoginScreen(navController) }
+        composable("register") { RegisterScreen(navController) }
     }
 }
