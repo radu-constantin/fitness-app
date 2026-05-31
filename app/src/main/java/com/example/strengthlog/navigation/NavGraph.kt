@@ -11,14 +11,16 @@ import com.example.strengthlog.screens.LoginScreen
 import com.example.strengthlog.screens.ProfileScreen
 import com.example.strengthlog.screens.RegisterScreen
 import com.example.strengthlog.screens.WorkoutDetailsScreen
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
+    val startDestination = if (FirebaseAuth.getInstance().currentUser != null) "home" else "login"
 
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = startDestination
     ) {
         composable("home") { HomeScreen(navController) }
         composable("profile") { ProfileScreen() }
