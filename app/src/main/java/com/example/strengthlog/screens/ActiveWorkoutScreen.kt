@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -160,6 +161,9 @@ fun SetRow(
     var weightText by remember(set.id) {
         mutableStateOf(if (set.weight == 0f) "" else set.weight.toString())
     }
+    var isSaved by remember(set.id) {
+        mutableStateOf(set.reps != 0 || set.weight != 0f)
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -173,7 +177,10 @@ fun SetRow(
         )
         OutlinedTextField(
             value = repsText,
-            onValueChange = { repsText = it },
+            onValueChange = {
+                repsText = it
+                isSaved = false
+            },
             label = { Text("Reps") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.weight(1f),
@@ -181,21 +188,31 @@ fun SetRow(
         )
         OutlinedTextField(
             value = weightText,
-            onValueChange = { weightText = it },
+            onValueChange = {
+                weightText = it
+                isSaved = false
+            },
             label = { Text("kg") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.weight(1f),
             singleLine = true
         )
-        // Saves reps + weight to Room for this set
         IconButton(
             onClick = {
                 val reps = repsText.toIntOrNull() ?: 0
                 val weight = weightText.toFloatOrNull() ?: 0f
                 onSetUpdated(set.copy(reps = reps, weight = weight))
+                isSaved = true
             }
         ) {
-            Icon(Icons.Default.Check, contentDescription = "Save set")
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Save set",
+                tint = if (isSaved)
+                    Color(0xFF4CAF50)
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

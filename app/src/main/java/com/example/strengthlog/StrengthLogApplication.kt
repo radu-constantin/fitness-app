@@ -2,12 +2,17 @@ package com.example.strengthlog
 
 import android.app.Application
 import com.example.strengthlog.data.local.database.AppDatabase
+import com.example.strengthlog.data.preferences.PreferencesManager
 import com.example.strengthlog.data.remote.api.RetrofitInstance
 import com.example.strengthlog.data.repository.ExerciseRepository
 import com.example.strengthlog.data.repository.UserRepository
 import com.example.strengthlog.data.repository.WorkoutRepository
 
 class StrengthLogApplication : Application() {
+
+    val preferencesManager: PreferencesManager by lazy {
+        PreferencesManager(this)
+    }
 
     val workoutRepository: WorkoutRepository by lazy {
         val db = AppDatabase.getInstance(this)

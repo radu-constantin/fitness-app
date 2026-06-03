@@ -1,9 +1,11 @@
 package com.example.strengthlog
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.strengthlog.screens.ActiveWorkoutScreen
 import com.example.strengthlog.screens.ExerciseBrowserScreen
 import com.example.strengthlog.screens.HomeScreen
@@ -23,10 +25,15 @@ fun NavGraph() {
         startDestination = startDestination
     ) {
         composable("home") { HomeScreen(navController) }
-        composable("profile") { ProfileScreen() }
+        composable("profile") { ProfileScreen(navController) }
         composable("active_workout") { ActiveWorkoutScreen(navController) }
         composable("exercise_browser") { ExerciseBrowserScreen(navController) }
-        composable("workout_details") { WorkoutDetailsScreen() }
+        composable(
+            route = "workout_details/{workoutId}",
+            arguments = listOf(navArgument("workoutId") { type = NavType.IntType })
+        ) {
+            WorkoutDetailsScreen(navController)
+        }
         composable("login") { LoginScreen(navController) }
         composable("register") { RegisterScreen(navController) }
     }

@@ -1,22 +1,50 @@
 package com.example.strengthlog.screens
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
+import com.example.strengthlog.viewmodels.RegisterUiState
+import com.example.strengthlog.viewmodels.RegisterViewModel
 
 @Composable
 fun RegisterScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var displayName by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
+
+    val viewModel: RegisterViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState) {
+        if (uiState is RegisterUiState.Success) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -61,44 +89,29 @@ fun RegisterScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = {
-                isLoading = true
-                errorMessage = ""
-                val auth = FirebaseAuth.getInstance()
-                auth.createUserWithEmailAndPassword(email.trim(), password.trim())
-                    .addOnCompleteListener { task ->
-                        isLoading = false
-                        if (task.isSuccessful) {
-                            navController.navigate("home") {
-                                popUpTo("login") { inclusive = true }
-                            }
-                        } else {
-                            errorMessage = task.exception?.message ?: "Registration failed"
-                        }
-                    }
-            },
-
+            onClick = { viewModel.register(email, password, displayName) },
+            enabled = uiState !is RegisterUiState.Loading
         ) {
-            Text(text = "Register")
+            Text("Register")
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (errorMessage.isNotEmpty()) {
+        if (uiState is RegisterUiState.Error) {
             Text(
-                text = errorMessage,
+                text = (uiState as RegisterUiState.Error).message,
                 color = MaterialTheme.colorScheme.error
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        if (isLoading) {
+        if (uiState is RegisterUiState.Loading) {
             CircularProgressIndicator()
             Spacer(modifier = Modifier.height(8.dp))
         }
 
         TextButton(onClick = { navController.navigate("login") }) {
-            Text(text = "Already have an account? Login")
+            Text("Already have an account? Login")
         }
     }
 }
