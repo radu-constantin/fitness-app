@@ -25,6 +25,9 @@ class ActiveWorkoutViewModel(application: Application) : AndroidViewModel(applic
     private val workoutRepository =
         (application as StrengthLogApplication).workoutRepository
 
+    private val exerciseRepository =
+        (application as StrengthLogApplication).exerciseRepository
+
     private var currentWorkoutId: Int = -1
 
     private var timerJob: Job? = null
@@ -145,6 +148,13 @@ class ActiveWorkoutViewModel(application: Application) : AndroidViewModel(applic
             )
             timerJob?.cancel()
             _isFinished.value = true
+        }
+    }
+
+    fun addExerciseById(exerciseId: String) {
+        viewModelScope.launch {
+            val exercise = exerciseRepository.getExerciseById(exerciseId) ?: return@launch
+            addExercise(exercise)
         }
     }
 

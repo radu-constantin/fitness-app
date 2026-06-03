@@ -25,7 +25,7 @@ fun NavGraph() {
         composable("home") { HomeScreen(navController) }
         composable("profile") { ProfileScreen() }
         composable("active_workout") { ActiveWorkoutScreen(navController) }
-        composable("exercise_browser") { ExerciseBrowserScreen() }
+        composable("exercise_browser") { ExerciseBrowserScreen(navController) }
         composable("workout_details") { WorkoutDetailsScreen() }
         composable("login") { LoginScreen(navController) }
         composable("register") { RegisterScreen(navController) }

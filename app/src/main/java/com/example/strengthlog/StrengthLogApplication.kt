@@ -2,6 +2,7 @@ package com.example.strengthlog
 
 import android.app.Application
 import com.example.strengthlog.data.local.database.AppDatabase
+import com.example.strengthlog.data.remote.api.RetrofitInstance
 import com.example.strengthlog.data.repository.ExerciseRepository
 import com.example.strengthlog.data.repository.UserRepository
 import com.example.strengthlog.data.repository.WorkoutRepository
@@ -15,7 +16,7 @@ class StrengthLogApplication : Application() {
 
     val exerciseRepository: ExerciseRepository by lazy {
         val db = AppDatabase.getInstance(this)
-        ExerciseRepository(db.exerciseDao())
+        ExerciseRepository(db.exerciseDao(), RetrofitInstance.api)
     }
 
     val userRepository: UserRepository by lazy {

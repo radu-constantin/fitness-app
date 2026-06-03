@@ -14,4 +14,10 @@ interface ExerciseDao {
 
     @Query("SELECT * FROM exercises")
     fun getAllExercises(): Flow<List<ExerciseEntity>>
+
+    @Query("SELECT COUNT(*) FROM exercises")
+    suspend fun getExerciseCount(): Int
+
+    @Query("SELECT * FROM exercises WHERE exerciseId = :exerciseId")
+    suspend fun getExerciseById(exerciseId: String): ExerciseEntity?
 }

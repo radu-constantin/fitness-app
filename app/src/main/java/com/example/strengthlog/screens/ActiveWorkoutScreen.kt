@@ -30,8 +30,21 @@ fun ActiveWorkoutScreen(navController: NavController) {
     val elapsedSeconds by viewModel.elapsedSeconds.collectAsState()
     val isFinished by viewModel.isFinished.collectAsState()
 
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+    val selectedExerciseId by savedStateHandle
+        ?.getStateFlow("selected_exercise_id", null as String?)
+        ?.collectAsState()
+        ?: remember { mutableStateOf<String?>(null) }
+
     LaunchedEffect(isFinished) {
         if (isFinished) navController.popBackStack()
+    }
+
+    LaunchedEffect(selectedExerciseId) {
+        selectedExerciseId?.let { exerciseId ->
+            viewModel.addExerciseById(exerciseId)
+            savedStateHandle?.set("selected_exercise_id", null)
+        }
     }
 
     Scaffold(
