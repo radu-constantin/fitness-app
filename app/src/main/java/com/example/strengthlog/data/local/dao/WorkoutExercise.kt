@@ -7,14 +7,15 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.strengthlog.data.local.entity.WorkoutExerciseEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WorkoutExerciseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWorkoutExercise(workoutExercise: WorkoutExerciseEntity)
+    suspend fun insertWorkoutExercise(workoutExercise: WorkoutExerciseEntity): Long
 
     @Query("SELECT * FROM workout_exercises WHERE workout_id = :workoutId")
-    suspend fun getExercisesForWorkout(workoutId: Int): List<WorkoutExerciseEntity>
+    fun getExercisesForWorkout(workoutId: Int): Flow<List<WorkoutExerciseEntity>>
 
     @Update
     suspend fun updateWorkoutExercise(workoutExercise: WorkoutExerciseEntity): Int
