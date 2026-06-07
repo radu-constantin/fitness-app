@@ -20,7 +20,12 @@ class WorkoutRepository(
     }
 
     suspend fun deleteWorkout(workout: WorkoutEntity) {
+        workoutExerciseDao.deleteExercisesForWorkout(workout.id)
         workoutDao.deleteWorkout(workout)
+    }
+
+    suspend fun getFirstTwoExerciseNames(workoutId: Int): List<String> {
+        return workoutExerciseDao.getFirstTwoExerciseNames(workoutId)
     }
 
     suspend fun getWorkoutById(workoutId: Int): WorkoutEntity? {

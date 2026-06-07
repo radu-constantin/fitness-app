@@ -16,8 +16,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val workoutRepository =
         (application as StrengthLogApplication).workoutRepository
 
-    private val _workouts = MutableStateFlow<List<WorkoutEntity>>(emptyList())
-    val workouts: StateFlow<List<WorkoutEntity>> = _workouts.asStateFlow()
+    private val _workouts = MutableStateFlow<List<WorkoutSummary>>(emptyList())
+    val workouts: StateFlow<List<WorkoutSummary>> = _workouts.asStateFlow()
 
     init {
         loadWorkouts()
@@ -28,8 +28,19 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             workoutRepository.getWorkoutsForUser(userId).collect { workoutList ->
-                _workouts.value = workoutList
+                _workouts.value = workoutList.map { workout ->
+                    WorkoutSummary(
+                        workout = workout,
+                        previewExercises = workoutRepository.getFirstTwoExerciseNames(workout.id)
+                    )
+                }
             }
+        }
+    }
+
+    fun deleteWorkout(workout: WorkoutEntity) {
+        viewModelScope.launch {
+            workoutRepository.deleteWorkout(workout)
         }
     }
 }

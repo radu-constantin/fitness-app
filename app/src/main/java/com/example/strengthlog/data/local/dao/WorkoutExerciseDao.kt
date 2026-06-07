@@ -22,4 +22,16 @@ interface WorkoutExerciseDao {
 
     @Delete
     suspend fun deleteWorkoutExercise(workoutExercise: WorkoutExerciseEntity)
+
+    @Query("""
+    SELECT DISTINCT e.name 
+    FROM workout_exercises we 
+    INNER JOIN exercises e ON we.exercise_id = e.exerciseId 
+    WHERE we.workout_id = :workoutId 
+    LIMIT 2
+""")
+    suspend fun getFirstTwoExerciseNames(workoutId: Int): List<String>
+
+    @Query("DELETE FROM workout_exercises WHERE workout_id = :workoutId")
+    suspend fun deleteExercisesForWorkout(workoutId: Int)
 }
