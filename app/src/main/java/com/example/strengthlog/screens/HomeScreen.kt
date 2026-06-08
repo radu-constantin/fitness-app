@@ -5,31 +5,43 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.strengthlog.data.local.entity.WorkoutEntity
+import com.example.strengthlog.ui.theme.StrengthLogTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.strengthlog.viewmodels.HomeViewModel
@@ -40,10 +52,12 @@ import com.example.strengthlog.viewmodels.WorkoutSummary
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeViewModel = viewModel()
     val workouts by viewModel.workouts.collectAsState()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
+            MediumTopAppBar(
                 title = { Text("StrengthLog") },
                 actions = {
                     IconButton(onClick = { navController.navigate("profile") }) {
@@ -52,17 +66,16 @@ fun HomeScreen(navController: NavController) {
                             contentDescription = "Profile"
                         )
                     }
-                }
+                },
+                scrollBehavior = scrollBehavior
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate("active_workout") }) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Start workout",
-                    modifier = Modifier.size(30.dp)
-                )
-            }
+            ExtendedFloatingActionButton(
+                onClick = { navController.navigate("active_workout") },
+                icon = { Icon(Icons.Default.Add, "Log workout icon") },
+                text = { Text("Log Workout") }
+            )
         }
     ) { innerPadding ->
         if (workouts.isEmpty()) {
@@ -74,10 +87,22 @@ fun HomeScreen(navController: NavController) {
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text("No workouts yet", style = MaterialTheme.typography.titleMedium)
-                    Text("Tap + to log your first workout", style = MaterialTheme.typography.bodyMedium)
+                    Icon(
+                        imageVector = Icons.Default.FitnessCenter,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("No workouts yet", style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            "Tap Log Workout to start your journey",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         } else {
@@ -86,7 +111,7 @@ fun HomeScreen(navController: NavController) {
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(workouts) { summary ->
                     WorkoutCard(
@@ -95,6 +120,7 @@ fun HomeScreen(navController: NavController) {
                         onDelete = { viewModel.deleteWorkout(summary.workout) }
                     )
                 }
+                item { Spacer(modifier = Modifier.padding(bottom = 80.dp)) }
             }
         }
     }
@@ -106,7 +132,7 @@ fun WorkoutCard(
     onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(
+    ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
@@ -115,34 +141,85 @@ fun WorkoutCard(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
-                Text(
-                    text = summary.workout.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = onDelete) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = summary.workout.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Event,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = formatDate(summary.workout.timeStart),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = formatDuration(summary.workout.timeStart, summary.workout.timeEnd),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete workout"
+                        contentDescription = "Delete workout",
+                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
                     )
                 }
             }
-            Text(
-                text = formatDate(summary.workout.timeStart),
-                style = MaterialTheme.typography.bodyMedium
-            )
+            
             if (summary.previewExercises.isNotEmpty()) {
-                Text(
-                    text = summary.previewExercises.joinToString(" · "),
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Spacer(modifier = Modifier.padding(top = 12.dp))
+                Row(verticalAlignment = Alignment.Top) {
+                    Icon(
+                        imageVector = Icons.Default.FitnessCenter,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(top = 2.dp)
+                            .size(16.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        summary.previewExercises.forEach { exercise ->
+                            Text(
+                                text = exercise.trim().replaceFirstChar { it.uppercase() },
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
             }
-            Text(
-                text = formatDuration(summary.workout.timeStart, summary.workout.timeEnd),
-                style = MaterialTheme.typography.bodySmall
-            )
         }
     }
 }
