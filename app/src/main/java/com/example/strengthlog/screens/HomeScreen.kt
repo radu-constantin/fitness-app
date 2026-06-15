@@ -69,8 +69,15 @@ fun HomeScreen(navController: NavController) {
             )
         },
         floatingActionButton = {
+            val activeWorkout = workouts.find { it.workout.timeEnd == null }
             FloatingActionButton(
-                onClick = { navController.navigate("active_workout") },
+                onClick = {
+                    if (activeWorkout != null) {
+                        navController.navigate("active_workout?workoutId=${activeWorkout.workout.id}")
+                    } else {
+                        navController.navigate("active_workout")
+                    }
+                },
                 content= { Icon(Icons.Default.Add, "Log workout icon") },
             )
         }
@@ -113,7 +120,13 @@ fun HomeScreen(navController: NavController) {
                 items(workouts) { summary ->
                     WorkoutCard(
                         summary = summary,
-                        onClick = { navController.navigate("workout_details/${summary.workout.id}") },
+                        onClick = {
+                            if (summary.workout.timeEnd == null) {
+                                navController.navigate("active_workout?workoutId=${summary.workout.id}")
+                            } else {
+                                navController.navigate("workout_details/${summary.workout.id}")
+                            }
+                        },
                         onDelete = { viewModel.deleteWorkout(summary.workout) }
                     )
                 }

@@ -26,7 +26,13 @@ fun NavGraph() {
     ) {
         composable("home") { HomeScreen(navController) }
         composable("profile") { ProfileScreen(navController) }
-        composable("active_workout") { ActiveWorkoutScreen(navController) }
+        composable(
+            route = "active_workout?workoutId={workoutId}",
+            arguments = listOf(navArgument("workoutId") {
+                type = NavType.IntType
+                defaultValue = -1
+            })
+        ) { ActiveWorkoutScreen(navController) }
         composable("exercise_browser") { ExerciseBrowserScreen(navController) }
         composable(
             route = "workout_details/{workoutId}",

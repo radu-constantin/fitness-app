@@ -2,6 +2,7 @@ package com.example.strengthlog.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.strengthlog.StrengthLogApplication
 import com.example.strengthlog.data.local.entity.ExerciseEntity
@@ -10,9 +11,7 @@ import com.example.strengthlog.data.local.entity.WorkoutExerciseEntity
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 data class ExerciseWithSets(
@@ -20,7 +19,10 @@ data class ExerciseWithSets(
     val sets: List<WorkoutExerciseEntity>
 )
 
-class ActiveWorkoutViewModel(application: Application) : AndroidViewModel(application) {
+class ActiveWorkoutViewModel(
+    application: Application,
+    savedStateHandle: SavedStateHandle
+) : AndroidViewModel(application) {
 
     private val workoutRepository =
         (application as StrengthLogApplication).workoutRepository
@@ -31,6 +33,7 @@ class ActiveWorkoutViewModel(application: Application) : AndroidViewModel(applic
     private var currentWorkoutId: Int = -1
 
     private var timerJob: Job? = null
+    private var exercisesJob: Job? = null
 
     private val _workoutName = MutableStateFlow("New Workout")
     val workoutName: StateFlow<String> = _workoutName.asStateFlow()
@@ -45,8 +48,50 @@ class ActiveWorkoutViewModel(application: Application) : AndroidViewModel(applic
     val isFinished: StateFlow<Boolean> = _isFinished.asStateFlow()
 
     init {
-        createWorkout()
+        val workoutIdArg = savedStateHandle.get<Int>("workoutId") ?: -1
+        if (workoutIdArg != -1) {
+            currentWorkoutId = workoutIdArg
+            loadExistingWorkout(workoutIdArg)
+        } else {
+            createWorkout()
+        }
         startTimer()
+    }
+
+    private fun loadExistingWorkout(workoutId: Int) {
+        viewModelScope.launch {
+            val workout = workoutRepository.getWorkoutById(workoutId) ?: return@launch
+            _workoutName.value = workout.name
+            _elapsedSeconds.value = (System.currentTimeMillis() - workout.timeStart) / 1000
+            observeWorkoutExercises(workoutId)
+        }
+    }
+
+    private fun observeWorkoutExercises(workoutId: Int) {
+        exercisesJob?.cancel()
+        exercisesJob = viewModelScope.launch {
+            workoutRepository.getExercisesForWorkout(workoutId).collect { workoutExercises ->
+                val exercisesWithSetsList = workoutExercises
+                    .groupBy { it.exerciseId }
+                    .mapNotNull { (exerciseId, sets) ->
+                        val exercise = exerciseRepository.getExerciseById(exerciseId) ?: return@mapNotNull null
+                        ExerciseWithSets(
+                            exercise = exercise,
+                            sets = sets.sortedBy { it.setNumber }
+                        )
+                    }
+
+                // Merge with in-memory exercises that have empty sets
+                val currentInMemory = _exercisesWithSets.value
+                val mergedList = exercisesWithSetsList.toMutableList()
+                currentInMemory.forEach { inMemory ->
+                    if (inMemory.sets.isEmpty() && mergedList.none { it.exercise.exerciseId == inMemory.exercise.exerciseId }) {
+                        mergedList.add(inMemory)
+                    }
+                }
+                _exercisesWithSets.value = mergedList
+            }
+        }
     }
 
     private fun createWorkout() {
@@ -60,6 +105,7 @@ class ActiveWorkoutViewModel(application: Application) : AndroidViewModel(applic
                 timeEnd = null
             )
             currentWorkoutId = workoutRepository.insertWorkout(workout).toInt()
+            observeWorkoutExercises(currentWorkoutId)
         }
     }
 
@@ -104,35 +150,13 @@ class ActiveWorkoutViewModel(application: Application) : AndroidViewModel(applic
                 reps = 0,
                 weight = 0f
             )
-            val insertedId = workoutRepository.insertWorkoutExercise(newSet).toInt()
-
-            _exercisesWithSets.value = _exercisesWithSets.value.map { exerciseWithSets ->
-                if (exerciseWithSets.exercise.exerciseId == exercise.exerciseId) {
-                    exerciseWithSets.copy(
-                        sets = exerciseWithSets.sets + newSet.copy(id = insertedId)
-                    )
-                } else {
-                    exerciseWithSets
-                }
-            }
+            workoutRepository.insertWorkoutExercise(newSet)
         }
     }
 
     fun updateSet(updatedSet: WorkoutExerciseEntity) {
         viewModelScope.launch {
             workoutRepository.updateWorkoutExercise(updatedSet)
-
-            _exercisesWithSets.value = _exercisesWithSets.value.map { exerciseWithSets ->
-                if (exerciseWithSets.exercise.exerciseId == updatedSet.exerciseId) {
-                    exerciseWithSets.copy(
-                        sets = exerciseWithSets.sets.map { set ->
-                            if (set.id == updatedSet.id) updatedSet else set
-                        }
-                    )
-                } else {
-                    exerciseWithSets
-                }
-            }
         }
     }
 
@@ -160,12 +184,7 @@ class ActiveWorkoutViewModel(application: Application) : AndroidViewModel(applic
 
     override fun onCleared() {
         super.onCleared()
-        if (!_isFinished.value && currentWorkoutId != -1) {
-            viewModelScope.launch {
-                val workout = workoutRepository.getWorkoutById(currentWorkoutId) ?: return@launch
-                workoutRepository.deleteWorkout(workout)
-            }
-        }
         timerJob?.cancel()
+        exercisesJob?.cancel()
     }
 }

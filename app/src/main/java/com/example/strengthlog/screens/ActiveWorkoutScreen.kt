@@ -81,9 +81,12 @@ fun ActiveWorkoutScreen(navController: NavController) {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate("exercise_browser") }
+                onClick = { navController.navigate("exercise_browser") },
+
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Exercise")
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Add a new exercise")
+                }
             }
         }
     ) { innerPadding ->
