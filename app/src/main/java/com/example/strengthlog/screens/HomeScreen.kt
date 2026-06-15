@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,10 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.strengthlog.data.local.entity.WorkoutEntity
-import com.example.strengthlog.ui.theme.StrengthLogTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.strengthlog.viewmodels.HomeViewModel
@@ -71,10 +69,9 @@ fun HomeScreen(navController: NavController) {
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
+            FloatingActionButton(
                 onClick = { navController.navigate("active_workout") },
-                icon = { Icon(Icons.Default.Add, "Log workout icon") },
-                text = { Text("Log Workout") }
+                content= { Icon(Icons.Default.Add, "Log workout icon") },
             )
         }
     ) { innerPadding ->
