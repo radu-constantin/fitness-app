@@ -81,7 +81,6 @@ class ActiveWorkoutViewModel(
                         )
                     }
 
-                // Merge with in-memory exercises that have empty sets
                 val currentInMemory = _exercisesWithSets.value
                 val mergedList = exercisesWithSetsList.toMutableList()
                 currentInMemory.forEach { inMemory ->

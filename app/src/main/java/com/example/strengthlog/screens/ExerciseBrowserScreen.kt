@@ -84,7 +84,6 @@ fun ExerciseBrowserScreen(navController: NavController) {
                             ExerciseItem(
                                 exercise = exercise,
                                 onClick = {
-                                    // Write the selected ID into ActiveWorkoutScreen's SavedStateHandle
                                     navController.previousBackStackEntry
                                         ?.savedStateHandle
                                         ?.set("selected_exercise_id", exercise.exerciseId)

@@ -24,6 +24,8 @@ import com.example.strengthlog.viewmodels.ExerciseWithSets
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActiveWorkoutScreen(navController: NavController) {
+    //todo Add a cancel button!
+
     val viewModel: ActiveWorkoutViewModel = viewModel()
 
     val workoutName by viewModel.workoutName.collectAsState()

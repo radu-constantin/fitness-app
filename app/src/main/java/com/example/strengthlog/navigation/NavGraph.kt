@@ -1,4 +1,4 @@
-package com.example.strengthlog
+package com.example.strengthlog.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType

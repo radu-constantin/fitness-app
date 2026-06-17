@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import com.example.strengthlog.screens.HomeScreen
+import com.example.strengthlog.navigation.NavGraph
 import com.example.strengthlog.ui.theme.StrengthLogTheme
 
 class MainActivity : ComponentActivity() {
