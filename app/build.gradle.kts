@@ -43,7 +43,9 @@ android {
 
 dependencies {
     implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.datastore.core)
     implementation(libs.androidx.ui.graphics)
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
     val room_version = "2.8.4"
     implementation("androidx.room:room-runtime:$room_version")
     ksp("androidx.room:room-compiler:$room_version")

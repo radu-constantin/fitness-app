@@ -1,6 +1,8 @@
 package com.example.strengthlog.viewmodels
 
 import android.app.Application
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -8,6 +10,8 @@ import com.example.strengthlog.StrengthLogApplication
 import com.example.strengthlog.data.local.entity.ExerciseEntity
 import com.example.strengthlog.data.local.entity.WorkoutEntity
 import com.example.strengthlog.data.local.entity.WorkoutExerciseEntity
+import com.example.strengthlog.data.preferences.PreferencesManager
+import androidx.compose.runtime.setValue
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,6 +33,16 @@ class ActiveWorkoutViewModel(
 
     private val exerciseRepository =
         (application as StrengthLogApplication).exerciseRepository
+
+    private val prefs = PreferencesManager(application)
+
+    var weightUnit by mutableStateOf(prefs.weightUnit)
+        private set
+
+    fun updateWeightUnit(unit: String) {
+        prefs.weightUnit = unit
+        weightUnit = unit
+    }
 
     private var currentWorkoutId: Int = -1
 

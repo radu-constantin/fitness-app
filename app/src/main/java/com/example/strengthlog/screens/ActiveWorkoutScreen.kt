@@ -28,6 +28,8 @@ fun ActiveWorkoutScreen(navController: NavController) {
 
     val viewModel: ActiveWorkoutViewModel = viewModel()
 
+    val weightUnit = viewModel.weightUnit
+
     val workoutName by viewModel.workoutName.collectAsState()
     val exercisesWithSets by viewModel.exercisesWithSets.collectAsState()
     val elapsedSeconds by viewModel.elapsedSeconds.collectAsState()
@@ -104,7 +106,8 @@ fun ActiveWorkoutScreen(navController: NavController) {
                 ExerciseCard(
                     exerciseWithSets = exerciseWithSets,
                     onAddSet = { viewModel.addSet(exerciseWithSets.exercise) },
-                    onSetUpdated = { viewModel.updateSet(it) }
+                    onSetUpdated = { viewModel.updateSet(it) },
+                    weightUnit = weightUnit
                 )
             }
         }
@@ -115,7 +118,8 @@ fun ActiveWorkoutScreen(navController: NavController) {
 fun ExerciseCard(
     exerciseWithSets: ExerciseWithSets,
     onAddSet: () -> Unit,
-    onSetUpdated: (WorkoutExerciseEntity) -> Unit
+    onSetUpdated: (WorkoutExerciseEntity) -> Unit,
+    weightUnit: String
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -136,13 +140,14 @@ fun ExerciseCard(
                         style = MaterialTheme.typography.labelMedium)
                     Text("Reps", modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.labelMedium)
-                    Text("kg", modifier = Modifier.weight(1f),
+                    Text(
+                        weightUnit, modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.labelMedium)
                     Spacer(modifier = Modifier.size(48.dp))
                 }
 
                 exerciseWithSets.sets.forEach { set ->
-                    SetRow(set = set, onSetUpdated = onSetUpdated)
+                    SetRow(set = set, onSetUpdated = onSetUpdated, weightUnit = weightUnit)
                 }
             }
 
@@ -158,6 +163,7 @@ fun ExerciseCard(
 @Composable
 fun SetRow(
     set: WorkoutExerciseEntity,
+    weightUnit: String,
     onSetUpdated: (WorkoutExerciseEntity) -> Unit
 ) {
     var repsText by remember(set.id) {
@@ -197,7 +203,7 @@ fun SetRow(
                 weightText = it
                 isSaved = false
             },
-            label = { Text("kg") },
+            label = { Text(weightUnit) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.weight(1f),
             singleLine = true
